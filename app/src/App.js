@@ -1,4 +1,4 @@
-import Home from "./components/Home";
+import { Outlet } from 'react-router-dom'
 import "./App.css";
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
           </nav>
         </div>
         <div className="col-md-10">
-          <Home></Home>
+          <Outlet></Outlet>
         </div>
       </div>
     </div>
