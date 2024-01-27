@@ -1,7 +1,7 @@
 package main
 
 import (
-	"backend/cmd/api/internal/models"
+	"backend/internal/models"
 	"encoding/json"
 	"fmt"
 	"net/http"
