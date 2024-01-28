@@ -30,9 +30,11 @@ function Movies() {
       <hr></hr>
       <table className="table table-stripped table-hover">
         <thead>
-          <th>Movie</th>
-          <th>Release Date</th>
-          <th>Rating</th>
+          <tr>
+            <th>Movie</th>
+            <th>Release Date</th>
+            <th>Rating</th>
+          </tr>
         </thead>
         <tbody>
           {movies.map((m) => (
