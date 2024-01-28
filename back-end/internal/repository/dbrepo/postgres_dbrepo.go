@@ -64,6 +64,65 @@ func (m *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
 	return movies, nil
 }
 
+func (m *PostgresDBRepo) OneMovie(id int) (*models.Movie, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `select id, title, release_date, runtime, mpaa_rating, 
+		description, coalesce(image, ''), created_at, updated_at
+		from movies where id = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	var movie models.Movie
+
+	err := row.Scan(
+		&movie.ID,
+		&movie.Title,
+		&movie.ReleaseDate,
+		&movie.RunTime,
+		&movie.MPAARating,
+		&movie.Description,
+		&movie.Image,
+		&movie.CreatedAt,
+		&movie.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// get genres, if any
+	query = `select g.id, g.genre from movies_genres mg
+		left join genres g on (mg.genre_id = g.id)
+		where mg.movie_id = $1
+		order by g.genre`
+
+	rows, err := m.DB.QueryContext(ctx, query, id)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var genres []*models.Genre
+	for rows.Next() {
+		var g models.Genre
+		err := rows.Scan(
+			&g.ID,
+			&g.Genre,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		genres = append(genres, &g)
+	}
+
+	movie.Genres = genres
+
+	return &movie, err
+}
+
 func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
