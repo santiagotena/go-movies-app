@@ -18,7 +18,7 @@ func (m *PostgresDBRepo) Connection() *sql.DB {
 }
 
 func (m *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
-	//Timeout after 3 seconds
+	// timeout after 3 seconds
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
@@ -37,7 +37,7 @@ func (m *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close() //Close db connections
+	defer rows.Close() // close db connections
 
 	var movies []*models.Movie
 
@@ -57,6 +57,7 @@ func (m *PostgresDBRepo) AllMovies() ([]*models.Movie, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		movies = append(movies, &movie)
 	}
 
@@ -67,8 +68,8 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
-	query := `select id, email, first_name, last_name, password, 
-						created_at, updated_at from users where email = $1`
+	query := `select id, email, first_name, last_name, password,
+			created_at, updated_at from users where email = $1`
 
 	var user models.User
 	row := m.DB.QueryRowContext(ctx, query, email)
@@ -82,6 +83,34 @@ func (m *PostgresDBRepo) GetUserByEmail(email string) (*models.User, error) {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (m *PostgresDBRepo) GetUserByID(id int) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+
+	query := `select id, email, first_name, last_name, password,
+			created_at, updated_at from users where id = $1`
+
+	var user models.User
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.FirstName,
+		&user.LastName,
+		&user.Password,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
 	if err != nil {
 		return nil, err
 	}
